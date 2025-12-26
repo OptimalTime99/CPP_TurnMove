@@ -1,6 +1,6 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-
+#include "CoreMinimal.h"
 #include "MyActor.h"
 #include "Engine/Engine.h"
 
@@ -46,17 +46,25 @@ void AMyActor::Turn()
 
 void AMyActor::Move()
 {
-	const FVector RandomDir = FMath::VRand();
-	const float Distance = FMath::RandRange(100.f, 500.f);
+	const float DX = FMath::RandRange(-100.f, 100.f);
+	const float DY = FMath::RandRange(-100.f, 100.f);
+	const float DZ = FMath::RandRange(-50.f, 100.f);
 
-	FVector NewLocation = GetActorLocation() + RandomDir * Distance;
-	SetActorLocation(NewLocation, true);
+	FVector Offset(DX, DY, DZ);
+	SetActorLocation(GetActorLocation() + Offset, true);
 }
 
 void AMyActor::RandomAction()
 {
 	Turn();
 	Move();
+
+	static FVector PrevLocation = InitialLocation;
+	FVector CurrentLocation = GetActorLocation();
+
+	TotalDistance += FVector::Dist(PrevLocation, CurrentLocation);
+	PrevLocation = CurrentLocation;
+
 	++ActionCount;
 
 	FVector Location = GetActorLocation();
@@ -87,5 +95,22 @@ void AMyActor::RandomAction()
 	if (ActionCount >= MaxActionCount)
 	{
 		GetWorldTimerManager().ClearTimer(RandomActionTimer);
+
+		const FString DistanceStr = FString::Printf(
+			TEXT("총 이동 거리: %.1f"),
+			TotalDistance
+		);
+
+		const FString FinalCountStr = FString::Printf(
+			TEXT("총 이동 횟수: %d"),
+			ActionCount
+		);
+
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, DistanceStr);
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FinalCountStr);
+		}
+
 	}
 }

@@ -27,9 +27,12 @@ public:
 	void Turn();
 	void Move();
 	void RandomAction();
+
 private:
 	FTimerHandle RandomActionTimer;
 
 	int32 ActionCount = 0;
 	const int32 MaxActionCount = 10;
+	FVector InitialLocation = FVector(0.f, 50.f, 0.f);
+	float TotalDistance = 0.f;
 };
