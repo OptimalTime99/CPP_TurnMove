@@ -72,10 +72,16 @@ void AMyActor::RandomAction()
 		Rotator.Pitch, Rotator.Yaw, Rotator.Roll
 	);
 
+	const FString MoveCountStr = FString::Printf(
+		TEXT("현재 이동 횟수: %d"),
+		ActionCount
+	);
+
 	if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue,  LocStr);
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red,   RotStr);
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, MoveCountStr);
 	}
 
 	if (ActionCount >= MaxActionCount)
