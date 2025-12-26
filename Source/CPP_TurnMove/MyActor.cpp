@@ -3,6 +3,9 @@
 #include "CoreMinimal.h"
 #include "MyActor.h"
 #include "Engine/Engine.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Components/StaticMeshComponent.h"
+#include "Materials/MaterialInterface.h"
 
 // Sets default values
 AMyActor::AMyActor()
@@ -24,6 +27,19 @@ void AMyActor::BeginPlay()
 		1.0f,
 		true
 	);
+
+	auto Cube = FindComponentByClass<UStaticMeshComponent>();
+
+	if (Cube)
+	{
+		auto Material = Cube->GetMaterial(0);
+
+		if (Material)
+		{
+			DynamicMaterial = UMaterialInstanceDynamic::Create(Material, NULL);
+			Cube->SetMaterial(0, DynamicMaterial);
+		}
+	}
 }
 
 // Called every frame
@@ -31,8 +47,17 @@ void AMyActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	//float blend = 0.5f + FMath::Cos(GetWorld()->TimeSeconds) / 2;
+	//DynamicMaterial->SetScalarParameterValue(TEXT("Blend"), blend);
 }
 
+void AMyActor::RandomAction()
+{
+	Turn();
+	Move();
+	ChangeColor();
+	PrintTotalMove();
+}
 
 void AMyActor::Turn()
 {
@@ -41,6 +66,18 @@ void AMyActor::Turn()
 	const float RandRoll  = FMath::RandRange(-180.f, 180.f);
 	FRotator NewRot(RandPitch, RandYaw, RandRoll);
 	SetActorRotation(NewRot);
+
+	FRotator Rotator = GetActorRotation();
+
+	const FString RotStr = FString::Printf(
+		TEXT("현재 회전: X(%.0f) / Y(%.0f) / Z(%.0f)"),
+		Rotator.Pitch, Rotator.Yaw, Rotator.Roll
+	);
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, RotStr);
+	}
 }
 
 
@@ -52,12 +89,6 @@ void AMyActor::Move()
 
 	FVector Offset(DX, DY, DZ);
 	SetActorLocation(GetActorLocation() + Offset, true);
-}
-
-void AMyActor::RandomAction()
-{
-	Turn();
-	Move();
 
 	static FVector PrevLocation = InitialLocation;
 	FVector CurrentLocation = GetActorLocation();
@@ -68,16 +99,10 @@ void AMyActor::RandomAction()
 	++ActionCount;
 
 	FVector Location = GetActorLocation();
-	FRotator Rotator = GetActorRotation();
 
 	const FString LocStr = FString::Printf(
 		TEXT("현재 좌표: X(%.0f) / Y(%.0f) / Z(%.0f)"),
 		Location.X, Location.Y, Location.Z
-	);
-
-	const FString RotStr = FString::Printf(
-		TEXT("현재 회전: X(%.0f) / Y(%.0f) / Z(%.0f)"),
-		Rotator.Pitch, Rotator.Yaw, Rotator.Roll
 	);
 
 	const FString MoveCountStr = FString::Printf(
@@ -87,11 +112,33 @@ void AMyActor::RandomAction()
 
 	if (GEngine)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue,  LocStr);
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red,   RotStr);
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, LocStr);
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, MoveCountStr);
 	}
+}
 
+void AMyActor::ChangeColor()
+{
+	if (DynamicMaterial)
+	{
+		// FMath::RandRange(0, 1) 또는 FMath::FRand() < 0.5f 사용
+		// 0 또는 1을 무작위로 선택 (50% 확률)
+		float blend = (FMath::RandRange(0, 1) == 0) ? 0.0f : 1.0f;
+
+		const FString BlendValue = FString::Printf(
+			TEXT("Current Blend: %f"),
+			blend
+		);
+
+		// 머티리얼 파라미터 업데이트
+		DynamicMaterial->SetScalarParameterValue(TEXT("Blend"), blend);
+
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Black, BlendValue);
+	}
+}
+
+void AMyActor::PrintTotalMove()
+{
 	if (ActionCount >= MaxActionCount)
 	{
 		GetWorldTimerManager().ClearTimer(RandomActionTimer);
@@ -114,3 +161,4 @@ void AMyActor::RandomAction()
 
 	}
 }
+

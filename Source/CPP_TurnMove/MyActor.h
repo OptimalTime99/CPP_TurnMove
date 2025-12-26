@@ -24,9 +24,11 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 
+	void RandomAction();
 	void Turn();
 	void Move();
-	void RandomAction();
+	void ChangeColor();
+	void PrintTotalMove();
 
 private:
 	FTimerHandle RandomActionTimer;
@@ -35,4 +37,6 @@ private:
 	const int32 MaxActionCount = 10;
 	FVector InitialLocation = FVector(0.f, 50.f, 0.f);
 	float TotalDistance = 0.f;
+
+	UMaterialInstanceDynamic* DynamicMaterial;
 };
