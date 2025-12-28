@@ -12,17 +12,16 @@ class CPP_TURNMOVE_API AMyActor : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
+	// 생성자
 	AMyActor();
 
 protected:
-	// Called when the game starts or when spawned
+	// 액터 생성 시 호출한다.
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
+	// 매 프레임 호출한다.
 	virtual void Tick(float DeltaTime) override;
-
 
 	void RandomAction();
 	void Turn();
